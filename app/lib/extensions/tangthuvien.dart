@@ -39,10 +39,20 @@ class Tangthuvien {
       String thumbnailURL = res.getElementsByClassName('book-img-box')[id].getElementsByClassName('lazy')[0].outerHtml;
       thumbnailURL = linkify(thumbnailURL, options: const LinkifyOptions(humanize: false))[1].text;
       thumbnailURL = thumbnailURL.substring(0, thumbnailURL.length-1);
-      //print('$name - $author - $thumbnailURL');
-      books.add(Book(name: name, author: author, thumbnailURL: thumbnailURL, url: ''));
+      String url= res.getElementsByClassName('book-mid-info')[id].getElementsByTagName('a')[0].outerHtml;
+      url = linkify(url, options: const LinkifyOptions(humanize: false))[1].text;
+      url = url.substring(0, url.length-1);
+      //print('$name - $author - $thumbnailURL - $url');
+      books.add(Book(name: name, author: author, thumbnailURL: thumbnailURL, url: url));
     }
     print('whut happened??');
     return books;
+  }
+  Future<String> getOverview(String bookUrl) async {
+    Response rawRes = await get(Uri.parse(bookUrl));
+    var res = parse(rawRes.body);
+    String intro = res.getElementsByClassName('book-intro')[0].text;
+
+    return intro.trim();
   }
 }

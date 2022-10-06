@@ -1,4 +1,5 @@
 import 'package:app/screens/bookshelf.dart';
+import 'package:app/screens/overview.dart';
 import 'package:app/screens/selectSource.dart';
 import 'package:app/screens/startup.dart';
 import 'package:app/screens/surf.dart';
@@ -12,6 +13,7 @@ void main() {
       '/bookshelf': (context) => Bookshelf(),
       '/select_source': (context) => SelectSource(),
       '/surf': (context) => Surf(),
+      '/overview': (context) => Overview(),
     },
   ));
 }

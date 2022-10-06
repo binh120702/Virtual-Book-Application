@@ -13,17 +13,13 @@ class Surf extends StatefulWidget {
 class _SurfState extends State<Surf> {
 
   List<Book> books = [];
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  dynamic sourceInstance;
 
   Future<void> getText() async {
     var data = {};
     data = ModalRoute.of(context)?.settings.arguments as Map;
     var chosenTag = data['chosenTag'];
-    var sourceInstance = data['sourceInstance'];
+    sourceInstance = data['sourceInstance'];
     books = await sourceInstance.getBooks(chosenTag);
     setState(() {
     });
@@ -31,6 +27,10 @@ class _SurfState extends State<Surf> {
 
   void jumpToOverview(Book book) {
     print('this is overview');
+    Navigator.pushNamed(context, '/overview', arguments: {
+      'book': book,
+      'sourceInstance': sourceInstance,
+    });
   }
 
   List<Widget> getGridViewItems() {
@@ -49,14 +49,33 @@ class _SurfState extends State<Surf> {
           child: Column(
             children: [
               Flexible(
-                flex: 5,
+                flex: 10,
                 child: Image(image: NetworkImage(book.thumbnailURL)),
               ),
               Flexible(
-                flex: 1,
+                flex: 3,
+                fit: FlexFit.tight,
                 child: Padding(
                   padding: const EdgeInsets.all(3.0),
-                  child: Text(book.name,),
+                  child: Text(
+                    book.name,
+                    style: TextStyle(
+                      fontFamily: 'SourceSansPro',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child: Text(
+                  book.author,
+                  style: TextStyle(
+                      fontFamily: 'SourceSansPro',
+                      color: Colors.grey[500],
+                      fontSize: 10,
+                  ),
                 ),
               ),
             ],
@@ -72,7 +91,8 @@ class _SurfState extends State<Surf> {
     return Container(
       color: Colors.white,
       child: GridView.count(
-        crossAxisCount: 2,
+        childAspectRatio: 0.55,
+        crossAxisCount: 3,
         children: getGridViewItems(),
       )
     );
