@@ -1,5 +1,5 @@
 class Extractor {
-  static List<String> extract(String str, String key) {
+  static List<String> extract(String str, String key, String separator) {
     int str_n = str.length;
     int key_n = key.length;
     List<String> keyList = [];
@@ -7,11 +7,11 @@ class Extractor {
       String substr = str.substring(i, i+key_n);
       if (substr == key) {
         int left = i+key_n;
-        while (left < str_n && str[left] != '"') {
+        while (left < str_n && str[left] != separator) {
           left++;
         }
         int right = left+1;
-        while (right < str_n && str[right] != '"') {
+        while (right < str_n && str[right] != separator) {
           right++;
         }
         if (left<right && right<str_n) {

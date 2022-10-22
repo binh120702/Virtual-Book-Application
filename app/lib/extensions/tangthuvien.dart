@@ -1,15 +1,15 @@
+import 'dart:convert' show utf8;
 import 'dart:developer';
 
 import 'package:app/extensions/extractor.dart';
+import 'package:app/models/source.dart';
 import 'package:http/http.dart';
 import 'package:linkify/linkify.dart';
 
 import '../models/book.dart';
 import 'package:html/parser.dart' show parse;
 
-class Tangthuvien {
-  String baseURL = 'https://truyen.tangthuvien.vn/tong-hop';
-  String tocBaseURL(bookID) => 'https://truyen.tangthuvien.vn/doc-truyen/page/' + bookID + '?limit=10000';
+class Tangthuvien extends Source{
   Map<String, String> tags = {
     'Mới cập nhật': '?ord=new',
     'Tiên hiệp': '?ord=new&ctg=1',
@@ -18,11 +18,12 @@ class Tangthuvien {
     'Khoa huyễn': '?ord=new&ctg=4',
     'Hoàn thành': '?fns=ht',
   };
-  late List<Book> bookList;
   List<String> getTags() {
     return tags.keys.toList();
   }
   Future<List<Book>> getBooks(String slug) async {
+    String baseURL = 'https://truyen.tangthuvien.vn/tong-hop';
+
     Response rawRes = await get(Uri.parse(baseURL+tags[slug]!));
     var res = parse(rawRes.body);
     List<Book> books = [];
@@ -59,6 +60,7 @@ class Tangthuvien {
     return 'Hoàn thành';
   }
   Future<List<List<String>>> getTableOfContents(String bookUrl) async {
+    String tocBaseURL(bookID) => 'https://truyen.tangthuvien.vn/doc-truyen/page/$bookID?limit=10000';
     Response rawRes = await get(Uri.parse(bookUrl));
     var res = parse(rawRes.body);
     String bookID = res.getElementsByClassName('blue-btn add-book ')[0].outerHtml;
@@ -69,28 +71,27 @@ class Tangthuvien {
     List temp = res.getElementsByTagName('a');
     List<List<String>> chapList = [];
 
+    chapNameList = [];
+    chapUrlList = [];
     for (int i = 0; i < temp.length-1; i++){
       String url = linkify(temp[i].outerHtml.toString(), options: const LinkifyOptions(humanize: false))[1].text;
       String chapName = temp[i].text.trim();
-      chapList.add([chapName, url]);
+      String realUrl = url.substring(0, url.length-1);
+      chapList.add([chapName, realUrl]);
+      chapNameList.add(chapName);
+      chapUrlList.add(realUrl);
     }
     return chapList;
   }
 
-  Future<String> getChapterContent(String chapterUrl, int index) async {
-    Response rawRes = await get(Uri.parse(chapterUrl));
+  Future<String> getChapterContent() async {
+    Response rawRes = await get(Uri.parse(chapUrlList[currentReadingChapter]));
     var res = parse(rawRes.body);
-    String bookID = res.getElementsByClassName('blue-btn add-book ')[0].outerHtml;
-    bookID = bookID.replaceAll(RegExp(r'[^0-9]'),'');
+    String chapID  = Extractor.extract(res.outerHtml, 'openWarningBox', '\'')[0];
 
-    rawRes = await get(Uri.parse('https://truyen.tangthuvien.vn/story/chapters?story_id=$bookID'));
-    res = parse(rawRes.body);
-    List<String> chapIdList = Extractor.extract(res.outerHtml, 'ng-chap');
-    String chapId = chapIdList[index];
-    
-    rawRes = await get(Uri.parse('https://truyen.tangthuvien.vn/get-4-chap?story_id=$bookID&sort_by_ttv=$index'));
-    res = parse(rawRes.body);
-    String chapContent = res.getElementsByClassName('box-chap box-chap-$chapId hidden')[0].text;
+    // rawRes = await get(Uri.parse('https://truyen.tangthuvien.vn/get-4-chap?story_id=$bookID&sort_by_ttv=$index'));
+    // res = parse(rawRes.body);
+    String chapContent = res.getElementsByClassName('box-chap box-chap-$chapID')[0].text;
     return chapContent;
   }
 }

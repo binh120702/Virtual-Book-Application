@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/book.dart';
+import '../models/source.dart';
 
 class Overview extends StatefulWidget {
   const Overview({Key? key}) : super(key: key);
@@ -13,7 +14,7 @@ class _OverviewState extends State<Overview> {
 
   late Book book;
   String overviewData = '';
-  dynamic sourceInstance;
+  late Source sourceInstance;
   String bookStatus = '';
 
   Future<void> getOverviewData() async {

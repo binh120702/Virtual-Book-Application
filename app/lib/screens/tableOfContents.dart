@@ -1,4 +1,4 @@
-import 'package:app/extensions/tangthuvien.dart';
+import 'package:app/models/source.dart';
 import 'package:flutter/material.dart';
 
 class TableOfContents extends StatefulWidget {
@@ -13,8 +13,7 @@ class _TableOfContentsState extends State<TableOfContents> {
   String bookURL = '';
   bool came = false;
   List<Widget> widgetChapList = [];
-  List<String> chapSource = [];
-  dynamic sourceInstance;
+  late Source sourceInstance;
 
   Future<void> getTOC() async {
     came = true;
@@ -26,7 +25,6 @@ class _TableOfContentsState extends State<TableOfContents> {
     setState(() {
       chapList.forEach((chap) {
         widgetChapList.add(Text(chap[0]));
-        chapSource.add(chap[1]);
       });
     });
   }
@@ -43,10 +41,9 @@ class _TableOfContentsState extends State<TableOfContents> {
   }
 
   void goToReader(int index) {
+    sourceInstance.setCurrentReadingChapter(index);
     Navigator.pushNamed(context, '/reader', arguments: {
       'sourceInstance': sourceInstance,
-      'url': chapSource[index],
-      'chapIndex': index,
     });
   }
 
