@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../models/source.dart';
 import '../models/book.dart';
 
 class Surf extends StatefulWidget {
@@ -13,7 +14,7 @@ class Surf extends StatefulWidget {
 class _SurfState extends State<Surf> {
 
   List<Book> books = [];
-  dynamic sourceInstance;
+  late Source sourceInstance;
 
   Future<void> getText() async {
     var data = {};

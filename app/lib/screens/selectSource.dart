@@ -1,3 +1,4 @@
+import 'package:app/models/source.dart';
 import 'package:app/extensions/tangthuvien.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +16,7 @@ class _SelectSourceState extends State<SelectSource> {
 
   String dropdownValue = sourceList.first;
   List<String> tagList = [];
-  dynamic sourceInstance;
+  late Source sourceInstance;
 
   List<DropdownMenuItem<String>> dropdownItemsGenerate(List<String> sourceList) {
     return sourceList.map<DropdownMenuItem<String>> ((String value) {

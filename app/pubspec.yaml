@@ -39,6 +39,7 @@ dependencies:
   http: ^0.13.5
   html: ^0.15.0
   linkify: ^4.1.0
+  metadata_fetch: ^0.4.1
 
 dev_dependencies:
   flutter_test:
