@@ -6,11 +6,14 @@ abstract class Source {
   late List<String> chapUrlList;
   late int currentReadingChapter;
 
+  String getCurrentChapterName() {
+    return chapNameList[currentReadingChapter];
+  }
   void setCurrentReadingChapter(int index) {
     currentReadingChapter = index;
   }
   bool setNextReadingChapter() {
-    if (currentReadingChapter<chapUrlList.length) {
+    if (currentReadingChapter<chapUrlList.length - 1) {
       currentReadingChapter ++;
     } else {
       return false;
