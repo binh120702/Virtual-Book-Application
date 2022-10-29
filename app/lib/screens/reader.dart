@@ -1,5 +1,8 @@
 import 'package:app/models/source.dart';
+import 'package:button_navigation_bar/button_navigation_bar.dart';
+import 'package:custom_navigation_bar/custom_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:sidebarx/sidebarx.dart';
 
 class Reader extends StatefulWidget {
   const Reader({Key? key}) : super(key: key);
@@ -10,11 +13,11 @@ class Reader extends StatefulWidget {
 
 class _ReaderState extends State<Reader> {
   String chapterContent = '';
+  String readingPercent = '0.0';
   late Source sourceInstance;
   bool came = false;
   final ScrollController _controller = ScrollController();
-  bool showFloatButton = false;
-
+  bool selected = false;
   void getChapterContent() async {
     setState(() {
       chapterContent = '';
@@ -26,28 +29,30 @@ class _ReaderState extends State<Reader> {
   }
 
   void _scrollListener() {
-    if (_controller.offset >= _controller.position.maxScrollExtent &&
-        !_controller.position.outOfRange) {
+    if (!_controller.position.outOfRange) {
+      readingPercent = (_controller.offset*100 / _controller.position.maxScrollExtent).toStringAsFixed(1);
       setState(() {
-        showFloatButton = true;
-      });
-    }
-    if (_controller.offset < _controller.position.maxScrollExtent &&
-        !_controller.position.outOfRange) {
-      setState(() {
-        showFloatButton = false;
+
       });
     }
   }
 
   void goNextChapter() {
     if (!sourceInstance.setNextReadingChapter()) return;
+    readingPercent = '0.0';
     getChapterContent();
   }
 
   void goPreviousChapter() {
     if (!sourceInstance.setPreviousReadingChapter()) return;
+    readingPercent = '0.0';
     getChapterContent();
+  }
+
+  void changeBottomButtonState() {
+    setState(() {
+      selected = !selected;
+    });
   }
 
   @override
@@ -65,29 +70,41 @@ class _ReaderState extends State<Reader> {
       getChapterContent();
     }
     return Scaffold(
-      floatingActionButton: Visibility(
-        visible: showFloatButton,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            FloatingActionButton.extended(
-              backgroundColor: Colors.yellow.withAlpha(100),
-              onPressed: goPreviousChapter,
-              label: Text('Chap truoc do'),
-              icon: Icon(Icons.navigate_before_rounded),
-            ),
-            FloatingActionButton.extended(
-              backgroundColor: Colors.yellow.withAlpha(100),
-              onPressed: goNextChapter,
-              label: Text('Chap ke tiep'),
-              icon: Icon(Icons.navigate_next_rounded),
-            ),
-          ],
-        ),
+      drawer: SidebarX(
+        controller: SidebarXController(selectedIndex: 0, extended: true),
+        items: const [
+          SidebarXItem(icon: Icons.home, label: 'Homee'),
+          SidebarXItem(icon: Icons.search, label: 'Search'),
+        ],
       ),
       appBar: AppBar(
-        title: Text('Chapxx'),
-        automaticallyImplyLeading: false,
+        foregroundColor: Colors.black,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              flex: 5,
+              child: Text(
+                sourceInstance.getCurrentChapterName(),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color.fromRGBO(59,49,40, 1),
+                ),
+              ),
+            ),
+            Flexible(
+              flex: 1,
+              child: Text(
+                '$readingPercent%',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color.fromRGBO(59,49,40, 1),
+                ),
+              )
+            )
+          ],
+        ),
         toolbarHeight: 30,
         backgroundColor: Color.fromRGBO(212,198,169, 1),
       ),
@@ -96,24 +113,48 @@ class _ReaderState extends State<Reader> {
         controller: _controller,
         itemCount: 2,
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                chapterContent,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color.fromRGBO(59,49,40, 1),
+            return GestureDetector(
+              onTap: changeBottomButtonState,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  chapterContent,
+                  style: TextStyle(
+                    fontWeight: FontWeight.normal,
+                    fontSize: 16,
+                    color: Color.fromRGBO(59, 49, 40, 1),
+                  ),
                 ),
               ),
             );
-          } else {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(0, 50, 0, 50),
-              child: Center(child: Text('Đã hết chapter!')),
-            );
           }
-        },
+      ),
+      floatingActionButton: AnimatedContainer(
+        height: selected ? 50.0 : 0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn,
+        child: SingleChildScrollView(
+          child: ButtonNavigationBar(
+            children: [
+              ButtonNavigationItem(
+                color: Color.fromRGBO(212,198,169, 0.5),
+                onPressed: goPreviousChapter,
+                label: 'Trước',
+              ),
+              ButtonNavigationItem(
+                color: Color.fromRGBO(212,198,169, 0.5),
+                width: 140,
+                onPressed: () {},
+                label: 'category',
+              ),
+              ButtonNavigationItem(
+                color: Color.fromRGBO(212,198,169, 0.5),
+                onPressed: goNextChapter,
+                label: 'Tiếp',
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
