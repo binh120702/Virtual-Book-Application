@@ -1,3 +1,4 @@
+import 'package:app/extensions/dataHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -10,10 +11,10 @@ class Startup extends StatefulWidget {
 
 class _StartupState extends State<Startup> {
 
-  void move() async {
-    await Future.delayed(const Duration(milliseconds: 2000), () {});
+  Future<void> move() async {
+    await DataHandler.initDatabase();
+    await Future.delayed(const Duration(milliseconds: 1000), () {});
     Navigator.pushReplacementNamed(context, '/bookshelf');
-    print('whut??');
   }
 
   @override
@@ -29,8 +30,7 @@ class _StartupState extends State<Startup> {
       body: Column(
         //crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(''),
+        children: const [
           SizedBox(height: 150,),
           Image(
             image: AssetImage('assets/logo.png',),
