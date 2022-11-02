@@ -1,6 +1,4 @@
-
 class Book {
-
   final String name;
   final String author;
   final String thumbnailURL;

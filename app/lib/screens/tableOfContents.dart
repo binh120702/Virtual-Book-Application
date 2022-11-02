@@ -9,8 +9,6 @@ class TableOfContents extends StatefulWidget {
 }
 
 class _TableOfContentsState extends State<TableOfContents> {
-  String bookName = '';
-  String bookURL = '';
   bool came = false;
   List<Widget> widgetChapList = [];
   late Source sourceInstance;
@@ -19,23 +17,28 @@ class _TableOfContentsState extends State<TableOfContents> {
     came = true;
     var args = (ModalRoute.of(context)?.settings.arguments as Map);
     sourceInstance = args['sourceInstance'];
-    bookName = args['book'].name;
-    bookURL = args['book'].url;
-    List<List<String>> chapList = await sourceInstance.getTableOfContents(bookURL);
-    setState(() {
-      chapList.forEach((chap) {
-        widgetChapList.add(Text(chap[0]));
+    if (await sourceInstance.getTableOfContents()) {
+      setState(() {
+        for (var chap in sourceInstance.chapNameList) {
+          widgetChapList.add(Text(chap));
+        }
       });
-    });
+    }
   }
 
   final ScrollController _controller = ScrollController();
 
-// This is what you're looking for!
   void _scrollDown() {
     _controller.animateTo(
       _controller.position.maxScrollExtent,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
+      curve: Curves.fastOutSlowIn,
+    );
+  }
+  void _scrollUp() {
+    _controller.animateTo(
+      _controller.position.minScrollExtent,
+      duration: const Duration(seconds: 1),
       curve: Curves.fastOutSlowIn,
     );
   }
@@ -48,15 +51,35 @@ class _TableOfContentsState extends State<TableOfContents> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (!came) getTOC();
     return Scaffold(
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: _scrollDown,
-        child: Icon(Icons.arrow_downward),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton.small(
+            backgroundColor: const Color.fromRGBO(212,198,169, 0.5),
+            heroTag: 'btn1',
+            onPressed: _scrollUp,
+            child: const Icon(Icons.arrow_upward),
+          ),
+          FloatingActionButton.small(
+            backgroundColor: const Color.fromRGBO(212,198,169, 0.5),
+            heroTag: 'btn2',
+            onPressed: _scrollDown,
+            child: const Icon(Icons.arrow_downward),
+          ),
+        ],
       ),
       appBar: AppBar(
-        title: Text(bookName),
+        title: Text(sourceInstance.myBook.name),
+        backgroundColor: const Color.fromRGBO(212,198,169, 1),
       ),
       body: Scrollbar(
         child: ListView.builder(

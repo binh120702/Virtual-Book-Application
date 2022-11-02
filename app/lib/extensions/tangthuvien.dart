@@ -1,6 +1,3 @@
-import 'dart:convert' show utf8;
-import 'dart:developer';
-
 import 'package:app/extensions/extractor.dart';
 import 'package:app/models/source.dart';
 import 'package:http/http.dart';
@@ -18,16 +15,17 @@ class Tangthuvien extends Source{
     'Khoa huyễn': '?ord=new&ctg=4',
     'Hoàn thành': '?fns=ht',
   };
+  @override
   List<String> getTags() {
     return tags.keys.toList();
   }
-  Future<List<Book>> getBooks(String slug) async {
+  @override
+  Future<List<Book>> getBooks(String slug, int page) async {
     String baseURL = 'https://truyen.tangthuvien.vn/tong-hop';
 
-    Response rawRes = await get(Uri.parse(baseURL+tags[slug]!));
+    Response rawRes = await get(Uri.parse('$baseURL${tags[slug]!}&page=$page'));
     var res = parse(rawRes.body);
     List<Book> books = [];
-    print(slug);
     for(var id = 0; id < 20; id ++) {
       String name = res.getElementsByClassName('book-mid-info')[id].getElementsByTagName('a')[0].text;
       String author = res.getElementsByClassName('book-mid-info')[id].getElementsByClassName('author')[0].getElementsByTagName('a')[0].text;
@@ -40,9 +38,9 @@ class Tangthuvien extends Source{
       //print('$name - $author - $thumbnailURL - $url');
       books.add(Book(name: name, author: author, thumbnailURL: thumbnailURL, url: url));
     }
-    print('whut happened??');
     return books;
   }
+  @override
   Future<String> getOverview(String bookUrl) async {
     Response rawRes = await get(Uri.parse(bookUrl));
     var res = parse(rawRes.body);
@@ -50,6 +48,7 @@ class Tangthuvien extends Source{
 
     return intro.trim();
   }
+  @override
   Future<String> getBookStatus(String bookUrl) async {
     Response rawRes = await get(Uri.parse(bookUrl));
     var res = parse(rawRes.body);
@@ -59,7 +58,11 @@ class Tangthuvien extends Source{
     }
     return 'Hoàn thành';
   }
-  Future<List<List<String>>> getTableOfContents(String bookUrl) async {
+  @override
+  Future<bool> getTableOfContents() async {
+    chapNameList = [];
+    chapUrlList = [];
+    String bookUrl = myBook.url;
     String tocBaseURL(bookID) => 'https://truyen.tangthuvien.vn/doc-truyen/page/$bookID?limit=10000';
     Response rawRes = await get(Uri.parse(bookUrl));
     var res = parse(rawRes.body);
@@ -69,22 +72,22 @@ class Tangthuvien extends Source{
     rawRes = await get(Uri.parse(tocBaseURL(bookID)));
     res = parse(rawRes.body);
     List temp = res.getElementsByTagName('a');
-    List<List<String>> chapList = [];
 
-    chapNameList = [];
-    chapUrlList = [];
     for (int i = 0; i < temp.length-1; i++){
       String url = linkify(temp[i].outerHtml.toString(), options: const LinkifyOptions(humanize: false))[1].text;
       String chapName = temp[i].text.trim();
       String realUrl = url.substring(0, url.length-1);
-      chapList.add([chapName, realUrl]);
       chapNameList.add(chapName);
       chapUrlList.add(realUrl);
     }
-    return chapList;
+    return true;
   }
 
+  @override
   Future<String> getChapterContent() async {
+    if (chapUrlList.isEmpty) {
+      return '';
+    }
     Response rawRes = await get(Uri.parse(chapUrlList[currentReadingChapter]));
     var res = parse(rawRes.body);
     String chapID  = Extractor.extract(res.outerHtml, 'openWarningBox', '\'')[0];

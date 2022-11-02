@@ -1,9 +1,8 @@
 import 'package:app/models/source.dart';
-import 'package:app/extensions/tangthuvien.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:app/extensions/sourceFinder.dart';
 
-const List<String> sourceList = ['Tang thu vien', 'Me truyen chu'];
+final List<String> sourceList = SourceFinder.getSourceList();
 
 class SelectSource extends StatefulWidget {
   const SelectSource({Key? key}) : super(key: key);
@@ -35,19 +34,7 @@ class _SelectSourceState extends State<SelectSource> {
   }
 
   List<String> getTagList(String source) {
-    switch(source) {
-      case 'Tang thu vien': {
-        sourceInstance = Tangthuvien();
-      }
-      break;
-      case 'Me truyen chu': {
-      }
-      break;
-      default: {
-        print('something is wrong');
-      }
-      break;
-    }
+    sourceInstance = SourceFinder.findFromString(source);
     return sourceInstance.getTags();
   }
 
@@ -55,13 +42,14 @@ class _SelectSourceState extends State<SelectSource> {
     Navigator.pushNamed(context, '/surf', arguments: {
       'sourceInstance': sourceInstance,
       'chosenTag': chosenTag,
+      'source': dropdownValue,
     });
   }
 
   List<Widget> getGridViewItems(List<String> tagList) {
     return tagList.map<Widget>((String value) {
       return Card(
-        color: Colors.grey[300],
+        color: Colors.white10,
         child: InkWell(
           splashColor: Colors.blue.withAlpha(30),
           onTap: () {
@@ -84,7 +72,7 @@ class _SelectSourceState extends State<SelectSource> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        //backgroundColor: Colors.brown[600],
+        backgroundColor: const Color.fromRGBO(212,198,169, 1),
         body: Column(
           children: [
             Flexible(
